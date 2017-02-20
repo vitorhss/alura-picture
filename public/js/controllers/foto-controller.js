@@ -1,42 +1,42 @@
-angular.module('alurapic').controller('FotoController', function($scope, $http, $routeParams){
+angular.module('alurapic').controller('FotoController', function($scope, $routeParams, recursoFoto){
     
     $scope.foto = {};
     $scope.mensagem = '';
 
     if($routeParams.fotoId){
-        $http.get('v1/fotos/' + $routeParams.fotoId)
-        .success(function(foto){
-            $scope.foto = foto;
-        })
+        recursoFoto.get({fotoId: $routeParams.fotoId },
+            function(foto){
+                $scope.foto = foto;
+
+            }, function(erro){
+                console.log(erro);
+
+            });
     }
 
     $scope.submeter = function(){
         if($scope.formulario.$valid){
-            if($scope.foto._id){  
-                $http.put('v1/fotos', $scope.foto._id, $scope.foto)
-                .success(function(){
-                    $scope.mensagem = 'Foto : ' + $scope.foto.titulo +  ' alterada com sucesso';
-                })
-                .error(function(erro){
+            if($routeParams.fotoId){
+                recursoFoto.update({fotoId: $scope.foto._id }, $scope.foto, 
+                   function(){
+                        $scope.mensagem = 'Foto : ' + $scope.foto.titulo +  ' alterada com sucesso';
+                }, function(erro){
                     console.log(erro);
-                    $scope.mensagem = 'Erro ao alterar foto: ' + $scope.foto.titulo ;
-                    
-                })
+                        $scope.mensagem = 'Erro ao alterar foto: ' + $scope.foto.titulo ;
+                })  
             }
             else {
+                recursoFoto.save($scope.foto, 
+                    function(){
+                        $scope.foto = {};
+                        $scope.mensagem = 'Foto incluída com sucesso';
 
-                $http.post('v1/fotos', $scope.foto)
-                .success(function(){
-                    $scope.foto = {};
-                    $scope.mensagem = 'Foto incluída com sucesso';
-                })
-                .error(function(){
+                } , function(){
                     $scope.mensagem = 'Erro ao incluir foto';
-                })  
+                });
 
             } 
         }
     }
-
-})
+});
 
